@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BotaniQ - 3D Printed Flower Pots | Nature. Design. Grow.</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        botaniq: {
+                            50: '#f4f7f4',
+                            100: '#e3ebe2',
+                            200: '#c5d8c3',
+                            500: '#4a7c43',
+                            600: '#3a6434',
+                            700: '#2d5a27',
+                            800: '#23471f',
+                            900: '#1a3718',
+                            accent: '#d4af37',
+                            earth: '#8b5a2b'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .active-tab {
+            color: #2d5a27 !important;
+            border-bottom: 3px solid #2d5a27;
+            font-weight: 700;
+        }
+        .pot-preview-container {
+            perspective: 1000px;
+        }
+        .pot-3d-wrapper {
+            transition: transform 0.6s ease;
+            transform-style: preserve-3d;
+        }
+        .pot-3d-wrapper:hover {
+            transform: rotateY(15deg) rotateX(5deg);
+        }
+        /* Custom Pot Patterns */
+        .pattern-ribbed {
+            background-image: repeating-linear-gradient(90deg, rgba(0,0,0,0.15), rgba(0,0,0,0.15) 6px, transparent 6px, transparent 12px);
+        }
+        .pattern-hex {
+            background-image: radial-gradient(rgba(0,0,0,0.2) 20%, transparent 20%);
+            background-size: 12px 12px;
+        }
+        .pattern-spiral {
+            background-image: repeating-linear-gradient(45deg, rgba(0,0,0,0.12), rgba(0,0,0,0.12) 10px, transparent 10px, transparent 20px);
+        }
+        .pattern-smooth {
+            background-image: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(0,0,0,0.1) 100%);
+        }
+    </style>
+</head>
+<body class="bg-[#f9faf8] text-gray-800 font-sans antialiased min-h-screen flex flex-col justify-between">
+
+    <!-- HEADER & NAVIGATION -->
+    <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md shadow-sm border-b border-botaniq-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <!-- Brand Logo & Slogan -->
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('home')">
+                    <div class="w-12 h-12 bg-botaniq-700 rounded-2xl flex items-center justify-center text-white font-serif font-bold text-2xl shadow-md border-2 border-botaniq-accent">
+                        B
+                    </div>
+                    <div>
+                        <span class="text-2xl font-extrabold tracking-tight text-botaniq-800 font-serif block leading-none">BotaniQ</span>
+                        <span class="text-xs text-botaniq-600 font-semibold tracking-wider uppercase mt-1 block">Nature. Design. Grow.</span>
+                    </div>
+                </div>
+
+                <!-- Desktop Navigation Menu -->
+                <nav class="hidden md:flex space-x-8">
+                    <button onclick="switchTab('home')" id="nav-home" class="nav-btn active-tab py-2 text-sm font-medium text-gray-600 hover:text-botaniq-700 transition">
+                        <i class="fa-solid fa-house mr-1.5"></i> Home
+                    </button>
+                    <button onclick="switchTab('products')" id="nav-products" class="nav-btn py-2 text-sm font-medium text-gray-600 hover:text-botaniq-700 transition">
+                        <i class="fa-solid fa-seedling mr-1.5"></i> Products
+                    </button>
+                    <button onclick="switchTab('order')" id="nav-order" class="nav-btn py-2 text-sm font-medium text-gray-600 hover:text-botaniq-700 transition">
+                        <i class="fa-solid fa-cart-shopping mr-1.5"></i> Order Online
+                    </button>
+                    <button onclick="switchTab('marketing')" id="nav-marketing" class="nav-btn py-2 text-sm font-medium text-gray-600 hover:text-botaniq-700 transition">
+                        <i class="fa-solid fa-chart-line mr-1.5"></i> SEO & Marketing
+                    </button>
+                    <button onclick="switchTab('contact')" id="nav-contact" class="nav-btn py-2 text-sm font-medium text-gray-600 hover:text-botaniq-700 transition">
+                        <i class="fa-solid fa-envelope mr-1.5"></i> Contact Us
+                    </button>
+                </nav>
+
+                <!-- Action Button & Cart Indicator -->
+                <div class="hidden md:flex items-center space-x-4">
+                    <button onclick="switchTab('order')" class="bg-botaniq-700 hover:bg-botaniq-800 text-white font-semibold px-5 py-2.5 rounded-full shadow-md hover:shadow-lg transition flex items-center space-x-2 text-sm">
+                        <i class="fa-solid fa-shopping-bag"></i>
+                        <span>Cart (<span id="cart-count">0</span>)</span>
+                    </button>
+                </div>
+
+                <!-- Mobile menu button -->
+                <div class="md:hidden flex items-center">
+                    <button onclick="toggleMobileMenu()" class="text-gray-700 hover:text-botaniq-700 focus:outline-none p-2">
+                        <i class="fa-solid fa-bars text-2xl" id="menu-icon"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-b border-gray-200 px-4 pt-2 pb-4 space-y-2">
+            <button onclick="switchTab('home')" class="block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:bg-botaniq-50 rounded-lg">Home</button>
+            <button onclick="switchTab('products')" class="block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:bg-botaniq-50 rounded-lg">Products</button>
+            <button onclick="switchTab('order')" class="block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:bg-botaniq-50 rounded-lg">Order Online</button>
+            <button onclick="switchTab('marketing')" class="block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:bg-botaniq-50 rounded-lg">SEO & Marketing</button>
+            <button onclick="switchTab('contact')" class="block w-full text-left px-3 py-2 text-base font-medium text-gray-700 hover:bg-botaniq-50 rounded-lg">Contact Us</button>
+        </div>
+    </header>
+
+    <main class="flex-grow">
+        <!-- PAGE 1: HOMEPAGE -->
+        <section id="page-home" class="page-section">
+            <!-- Hero Banner -->
+            <div class="relative bg-gradient-to-r from-botaniq-900 via-botaniq-800 to-botaniq-700 text-white overflow-hidden py-16 lg:py-24">
+                <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#d4af37_1px,transparent_1px)] [background-size:16px_16px]"></div>
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                        <div class="space-y-6 text-center lg:text-left">
+                            <span class="inline-block bg-botaniq-accent/20 border border-botaniq-accent text-botaniq-accent font-semibold px-4 py-1.5 rounded-full text-xs uppercase tracking-widest">
+                                🖨️ Eco 3D Printing Technology
+                            </span>
+                            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-serif font-bold tracking-tight text-white leading-tight">
+                                Print the Future, <br><span class="text-botaniq-200">Grow the Green.</span>
+                            </h1>
+                            <p class="text-lg text-botaniq-100 font-light italic">
+                                "Where life plants you, bloom with grace."
+                            </p>
+                            <p class="text-base text-gray-200 max-w-xl mx-auto lg:mx-0">
+                                Tech meets nature for just <strong class="text-white text-xl font-bold bg-botaniq-600 px-2 py-0.5 rounded">RM20</strong>. Lightweight, durable, and designed with precision geometric patterns for your indoor jungle.
+                            </p>
+                            <div class="pt-4 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                                <button onclick="switchTab('products')" class="bg-botaniq-accent hover:bg-yellow-500 text-botaniq-900 font-bold px-8 py-4 rounded-xl shadow-lg transition transform hover:-translate-y-0.5 text-base">
+                                    Explore Collection <i class="fa-solid fa-arrow-right ml-2"></i>
+                                </button>
+                                <button onclick="switchTab('order')" class="border-2 border-white/60 hover:border-white text-white font-semibold px-8 py-4 rounded-xl hover:bg-white/10 transition text-base">
+                                    Order Now (RM20)
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Hero Graphic / Pot Showcase Card -->
+                        <div class="flex justify-center">
+                            <div class="bg-white/10 backdrop-blur-md p-6 rounded-3xl border border-white/20 shadow-2xl max-w-md w-full text-center relative">
+                                <div class="absolute -top-4 -right-4 bg-red-500 text-white text-xs font-extrabold uppercase px-3 py-1 rounded-full shadow-md animate-pulse">
+                                    Flat Rate RM20
+                                </div>
+                                <div class="w-64 h-64 mx-auto rounded-2xl bg-gradient-to-b from-botaniq-100 to-white flex items-center justify-center p-4 relative overflow-hidden shadow-inner">
+                                    <!-- Pot Visual Mock -->
+                                    <div class="text-center">
+                                        <div class="w-36 h-40 bg-botaniq-700 rounded-b-3xl rounded-t-lg mx-auto relative shadow-2xl border-b-4 border-botaniq-900 pattern-ribbed flex items-center justify-center">
+                                            <div class="absolute -top-12 text-green-600 text-5xl transform hover:scale-110 transition duration-300">
+                                                🪴
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <h3 class="mt-4 text-xl font-bold font-serif text-white">BotaniQ Signature Ribbed Pot</h3>
+                                <p class="text-xs text-botaniq-100 mt-1">Lightweight PLA Material • Integrated Drainage</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Value Propositions / Highlights -->
+            <div class="py-12 bg-white border-b border-gray-100">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+                        <div class="p-4 rounded-2xl bg-botaniq-50 hover:bg-botaniq-100/60 transition">
+                            <i class="fa-solid fa-leaf text-3xl text-botaniq-700 mb-2"></i>
+                            <h4 class="font-bold text-gray-900 text-sm">Eco-Friendly PLA</h4>
+                            <p class="text-xs text-gray-500 mt-1">Sustainable plant-based polymers</p>
+                        </div>
+                        <div class="p-4 rounded-2xl bg-botaniq-50 hover:bg-botaniq-100/60 transition">
+                            <i class="fa-solid fa-cube text-3xl text-botaniq-700 mb-2"></i>
+                            <h4 class="font-bold text-gray-900 text-sm">3D Print Precision</h4>
+                            <p class="text-xs text-gray-500 mt-1">Intricate geometric textures</p>
+                        </div>
+                        <div class="p-4 rounded-2xl bg-botaniq-50 hover:bg-botaniq-100/60 transition">
+                            <i class="fa-solid fa-tag text-3xl text-botaniq-700 mb-2"></i>
+                            <h4 class="font-bold text-gray-900 text-sm">Affordable RM20</h4>
+                            <p class="text-xs text-gray-500 mt-1">Designer aesthetic at low cost</p>
+                        </div>
+                        <div class="p-4 rounded-2xl bg-botaniq-50 hover:bg-botaniq-100/60 transition">
+                            <i class="fa-solid fa-truck-fast text-3xl text-botaniq-700 mb-2"></i>
+                            <h4 class="font-bold text-gray-900 text-sm">Malaysia Delivery</h4>
+                            <p class="text-xs text-gray-500 mt-1">Safe & direct shipping</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive Pot Customizer Previewer -->
+            <div class="py-16 bg-botaniq-50">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="text-center max-w-3xl mx-auto mb-12">
+                        <span class="text-botaniq-700 text-xs font-bold uppercase tracking-widest">Interactive Tool</span>
+                        <h2 class="text-3xl font-serif font-bold text-gray-900 mt-1">Customize Your BotaniQ Pot</h2>
+                        <p class="text-gray-600 mt-2">Test custom filament colors and patterns in real-time before ordering.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-white rounded-3xl p-6 sm:p-10 shadow-xl border border-gray-100">
+                        <!-- Left Controls -->
+                        <div class="lg:col-span-5 space-y-6">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">1. Choose Color Finish:</label>
+                                <div class="grid grid-cols-2 gap-3" id="color-options">
+                                    <button onclick="setCustomColor('#2d5a27', 'Olive Green')" class="color-btn border-2 border-botaniq-700 bg-botaniq-700 text-white py-2.5 px-4 rounded-xl text-xs font-semibold flex items-center justify-center space-x-2">
+                                        <span class="w-4 h-4 rounded-full bg-[#2d5a27] border border-white"></span>
+                                        <span>Olive Green</span>
+                                    </button>
+                                    <button onclick="setCustomColor('#f4f4f4', 'Matte White')" class="color-btn border border-gray-300 bg-white text-gray-800 py-2.5 px-4 rounded-xl text-xs font-semibold flex items-center justify-center space-x-2">
+                                        <span class="w-4 h-4 rounded-full bg-white border border-gray-400"></span>
+                                        <span>Matte White</span>
+                                    </button>
+                                    <button onclick="setCustomColor('#1a1a1a', 'Onyx Black')" class="color-btn border border-gray-300 bg-gray-900 text-white py-2.5 px-4 rounded-xl text-xs font-semibold flex items-center justify-center space-x-2">
+                                        <span class="w-4 h-4 rounded-full bg-black border border-gray-600"></span>
+                                        <span>Onyx Black</span>
+                                    </button>
+                                    <button onclick="setCustomColor('#c86d51', 'Terracotta')" class="color-btn border border-gray-300 bg-[#c86d51] text-white py-2.5 px-4 rounded-xl text-xs font-semibold flex items-center justify-center space-x-2">
+                                        <span class="w-4 h-4 rounded-full bg-[#c86d51] border border-white"></span>
+                                        <span>Terracotta</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">2. Choose Surface Texture Pattern:</label>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <button onclick="setCustomPattern('pattern-ribbed', 'Vertical Ribbed')" class="border border-gray-200 p-3 rounded-xl hover:border-botaniq-700 text-left text-xs font-semibold">
+                                        <i class="fa-solid fa-bars-staggered mr-2 text-botaniq-700"></i> Vertical Ribbed
+                                    </button>
+                                    <button onclick="setCustomPattern('pattern-hex', 'Hexagonal Mesh')" class="border border-gray-200 p-3 rounded-xl hover:border-botaniq-700 text-left text-xs font-semibold">
+                                        <i class="fa-solid fa-shapes mr-2 text-botaniq-700"></i> Hexagonal Mesh
+                                    </button>
+                                    <button onclick="setCustomPattern('pattern-spiral', 'Spiral Wave')" class="border border-gray-200 p-3 rounded-xl hover:border-botaniq-700 text-left text-xs font-semibold">
+                                        <i class="fa-solid fa-dharmachakra mr-2 text-botaniq-700"></i> Spiral Wave
+                                    </button>
+                                    <button onclick="setCustomPattern('pattern-smooth', 'Smooth Matte')" class="border border-gray-200 p-3 rounded-xl hover:border-botaniq-700 text-left text-xs font-semibold">
+                                        <i class="fa-solid fa-circle mr-2 text-botaniq-700"></i> Smooth Matte
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="p-4 bg-botaniq-50 rounded-2xl flex justify-between items-center border border-botaniq-100">
+                                <div>
+                                    <span class="text-xs text-gray-500 block">Unit Price</span>
+                                    <span class="text-2xl font-bold text-botaniq-800">RM 20.00</span>
+                                </div>
+                                <button onclick="quickOrderCustomized()" class="bg-botaniq-700 hover:bg-botaniq-800 text-white font-bold px-6 py-2.5 rounded-xl text-sm shadow">
+                                    Order This Custom Design
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Right Live 3D Preview -->
+                        <div class="lg:col-span-7 flex flex-col items-center justify-center p-8 bg-gradient-to-b from-gray-50 to-gray-100 rounded-2xl border border-gray-200 min-h-[380px]">
+                            <span class="text-xs font-bold text-gray-400 mb-4 uppercase tracking-widest">Live Interactive Preview</span>
+                            
+                            <div class="pot-preview-container relative">
+                                <!-- Simulated Plant Pot -->
+                                <div id="custom-pot-preview" class="w-48 h-56 rounded-b-3xl rounded-t-lg mx-auto relative shadow-2xl transition-all duration-500 pattern-ribbed flex items-center justify-center" style="background-color: #2d5a27;">
+                                    <!-- Plant top -->
+                                    <div class="absolute -top-20 text-7xl drop-shadow-md">
+                                        🌿
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-8 text-center space-y-1">
+                                <h4 id="preview-title" class="font-bold text-gray-800 text-lg">Olive Green — Vertical Ribbed Pot</h4>
+                                <p class="text-xs text-gray-500">Includes drainage hole & standard catch tray</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 2: PRODUCTS PAGE -->
+        <section id="page-products" class="page-section hidden py-12">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center max-w-3xl mx-auto mb-10">
+                    <span class="text-botaniq-700 text-xs font-bold uppercase tracking-widest">BotaniQ Catalog</span>
+                    <h2 class="text-3xl font-serif font-bold text-gray-900 mt-1">3D Printed Pot Collection</h2>
+                    <p class="text-gray-600 mt-2">All designs crafted with high-durability PLA filament. Fixed price RM20 per unit.</p>
+                </div>
+
+                <!-- Product Filters -->
+                <div class="flex flex-wrap justify-center gap-2 mb-10">
+                    <button onclick="filterProducts('all')" class="filter-btn bg-botaniq-700 text-white text-xs font-bold px-5 py-2 rounded-full shadow">All Models</button>
+                    <button onclick="filterProducts('geometric')" class="filter-btn bg-white hover:bg-gray-100 text-gray-700 border text-xs font-bold px-5 py-2 rounded-full">Geometric</button>
+                    <button onclick="filterProducts('ribbed')" class="filter-btn bg-white hover:bg-gray-100 text-gray-700 border text-xs font-bold px-5 py-2 rounded-full">Ribbed & Wave</button>
+                    <button onclick="filterProducts('succulent')" class="filter-btn bg-white hover:bg-gray-100 text-gray-700 border text-xs font-bold px-5 py-2 rounded-full">Compact Succulent</button>
+                </div>
+
+                <!-- Product Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8" id="product-grid">
+                    <!-- Product Card 1 -->
+                    <div class="product-card bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-md hover:shadow-xl transition duration-300" data-category="geometric">
+                        <div class="h-60 bg-gradient-to-b from-botaniq-50 to-white relative flex items-center justify-center p-4">
+                            <span class="absolute top-3 left-3 bg-botaniq-700 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase">Bestseller</span>
+                            <div class="w-32 h-40 bg-botaniq-800 rounded-b-2xl rounded-t-sm shadow-xl pattern-hex flex items-center justify-center relative">
+                                <span class="absolute -top-10 text-5xl">🪴</span>
+                            </div>
+                        </div>
+                        <div class="p-5">
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="font-bold text-gray-900 text-base font-serif">Geometric Hexagon Pot</h3>
+                                <span class="text-botaniq-700 font-extrabold text-lg">RM20</span>
+                            </div>
+                            <p class="text-xs text-gray-500 mb-4">Structured multi-faceted geometry perfect for modern desks.</p>
+                            <button onclick="addToOrder('Geometric Hexagon Pot')" class="w-full bg-botaniq-700 hover:bg-botaniq-800 text-white font-semibold py-2.5 rounded-xl text-xs transition flex items-center justify-center space-x-2">
+                                <i class="fa-solid fa-cart-plus"></i>
+                                <span>Order Now (RM20)</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Product Card 2 -->
+                    <div class="product-card bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-md hover:shadow-xl transition duration-300" data-category="ribbed">
+                        <div class="h-60 bg-gradient-to-b from-botaniq-50 to-white relative flex items-center justify-center p-4">
+                            <span class="absolute top-3 left-3 bg-amber-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase">New Design</span>
+                            <div class="w-32 h-40 bg-white border border-gray-200 rounded-b-2xl rounded-t-sm shadow-xl pattern-spiral flex items-center justify-center relative">
+                                <span class="absolute -top-10 text-5xl">🌾</span>
+                            </div>
+                        </div>
+                        <div class="p-5">
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="font-bold text-gray-900 text-base font-serif">Ribbed Spiral Wave Pot</h3>
+                                <span class="text-botaniq-700 font-extrabold text-lg">RM20</span>
+                            </div>
+                            <p class="text-xs text-gray-500 mb-4">Smooth flowing vertical curves that reflect indoor lighting.</p>
+                            <button onclick="addToOrder('Ribbed Spiral Wave Pot')" class="w-full bg-botaniq-700 hover:bg-botaniq-800 text-white font-semibold py-2.5 rounded-xl text-xs transition flex items-center justify-center space-x-2">
+                                <i class="fa-solid fa-cart-plus"></i>
+                                <span>Order Now (RM20)</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Product Card 3 -->
+                    <div class="product-card bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-md hover:shadow-xl transition duration-300" data-category="succulent">
+                        <div class="h-60 bg-gradient-to-b from-botaniq-50 to-white relative flex items-center justify-center p-4">
+                            <div class="w-32 h-36 bg-[#c86d51] rounded-b-2xl rounded-t-sm shadow-xl pattern-smooth flex items-center justify-center relative">
+                                <span class="absolute -top-8 text-5xl">🌵</span>
+                            </div>
+                        </div>
+                        <div class="p-5">
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="font-bold text-gray-900 text-base font-serif">Compact Succulent Planter</h3>
+                                <span class="text-botaniq-700 font-extrabold text-lg">RM20</span>
+                            </div>
+                            <p class="text-xs text-gray-500 mb-4">Specially sized mini planter for small cacti and desk plants.</p>
+                            <button onclick="addToOrder('Compact Succulent Planter')" class="w-full bg-botaniq-700 hover:bg-botaniq-800 text-white font-semibold py-2.5 rounded-xl text-xs transition flex items-center justify-center space-x-2">
+                                <i class="fa-solid fa-cart-plus"></i>
+                                <span>Order Now (RM20)</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Product Card 4 -->
+                    <div class="product-card bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-md hover:shadow-xl transition duration-300" data-category="geometric">
+                        <div class="h-60 bg-gradient-to-b from-botaniq-50 to-white relative flex items-center justify-center p-4">
+                            <div class="w-32 h-44 bg-gray-900 rounded-b-2xl rounded-t-sm shadow-xl pattern-ribbed flex items-center justify-center relative">
+                                <span class="absolute -top-10 text-5xl">🌿</span>
+                            </div>
+                        </div>
+                        <div class="p-5">
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="font-bold text-gray-900 text-base font-serif">Modern Minimalist Vase Pot</h3>
+                                <span class="text-botaniq-700 font-extrabold text-lg">RM20</span>
+                            </div>
+                            <p class="text-xs text-gray-500 mb-4">Clean contemporary line art pot with sleek black finish.</p>
+                            <button onclick="addToOrder('Modern Minimalist Vase Pot')" class="w-full bg-botaniq-700 hover:bg-botaniq-800 text-white font-semibold py-2.5 rounded-xl text-xs transition flex items-center justify-center space-x-2">
+                                <i class="fa-solid fa-cart-plus"></i>
+                                <span>Order Now (RM20)</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 3: ORDER PAGE & SHOPPING CART -->
+        <section id="page-order" class="page-section hidden py-12">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-10">
+                    <span class="text-botaniq-700 text-xs font-bold uppercase tracking-widest">Easy Checkout</span>
+                    <h2 class="text-3xl font-serif font-bold text-gray-900 mt-1">Place Your BotaniQ Order</h2>
+                    <p class="text-gray-600 text-sm mt-1">Fill out your preferred model and shipping details. Total calculates instantly.</p>
+                </div>
+
+                <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-xl border border-gray-100 grid grid-cols-1 md:grid-cols-12 gap-8">
+                    <!-- Order Form -->
+                    <form id="checkout-form" onsubmit="handleOrderSubmit(event)" class="md:col-span-7 space-y-4">
+                        <h3 class="text-base font-bold text-gray-900 border-b pb-2 flex items-center">
+                            <i class="fa-solid fa-boxes-packing mr-2 text-botaniq-700"></i> Order Selection
+                        </h3>
+
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Select Pot Model:</label>
+                            <select id="order-model" onchange="calculateTotal()" class="w-full bg-gray-50 border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-botaniq-700 focus:outline-none">
+                                <option value="Geometric Hexagon Pot">Geometric Hexagon Pot (RM20)</option>
+                                <option value="Ribbed Spiral Wave Pot">Ribbed Spiral Wave Pot (RM20)</option>
+                                <option value="Compact Succulent Planter">Compact Succulent Planter (RM20)</option>
+                                <option value="Modern Minimalist Vase Pot">Modern Minimalist Vase Pot (RM20)</option>
+                                <option value="Custom Designed Pot">Custom Designed Pot (RM20)</option>
+                            </select>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-1">Color Option:</label>
+                                <select id="order-color" class="w-full bg-gray-50 border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-botaniq-700 focus:outline-none">
+                                    <option value="Olive Green">Olive Green</option>
+                                    <option value="Matte White">Matte White</option>
+                                    <option value="Onyx Black">Onyx Black</option>
+                                    <option value="Terracotta">Terracotta</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-1">Quantity:</label>
+                                <input type="number" id="order-qty" value="1" min="1" max="50" onchange="calculateTotal()" onkeyup="calculateTotal()" class="w-full bg-gray-50 border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-botaniq-700 focus:outline-none">
+                            </div>
+                        </div>
+
+                        <h3 class="text-base font-bold text-gray-900 border-b pb-2 pt-4 flex items-center">
+                            <i class="fa-solid fa-truck-ramp-box mr-2 text-botaniq-700"></i> Delivery Information
+                        </h3>
+
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Full Name:</label>
+                            <input type="text" id="cust-name" required placeholder="e.g. Aisyah Ahmad" class="w-full bg-gray-50 border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-botaniq-700 focus:outline-none">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Phone Number (WhatsApp):</label>
+                            <input type="tel" id="cust-phone" required placeholder="e.g. 0123456789" class="w-full bg-gray-50 border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-botaniq-700 focus:outline-none">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Shipping Address (Malaysia):</label>
+                            <textarea id="cust-address" required rows="3" placeholder="Enter street address, postcode, and city" class="w-full bg-gray-50 border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-botaniq-700 focus:outline-none"></textarea>
+                        </div>
+
+                        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3.5 rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-sm mt-4">
+                            <i class="fa-brands fa-whatsapp text-lg"></i>
+                            <span>Send Order via WhatsApp</span>
+                        </button>
+                    </form>
+
+                    <!-- Summary Sidebar -->
+                    <div class="md:col-span-5 bg-botaniq-50 rounded-2xl p-6 border border-botaniq-100 flex flex-col justify-between">
+                        <div>
+                            <h3 class="font-bold text-gray-900 text-lg font-serif mb-4 pb-2 border-b border-botaniq-200">Order Summary</h3>
+                            <div class="space-y-3 text-xs">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Product Price (1x)</span>
+                                    <span class="font-bold text-gray-800">RM 20.00</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Selected Quantity</span>
+                                    <span id="summary-qty" class="font-bold text-gray-800">1</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Subtotal</span>
+                                    <span id="summary-subtotal" class="font-bold text-gray-800">RM 20.00</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Standard Delivery Fee</span>
+                                    <span class="font-bold text-gray-800">RM 5.00</span>
+                                </div>
+                                <div class="border-t border-botaniq-200 pt-3 flex justify-between text-base font-extrabold text-botaniq-800">
+                                    <span>Grand Total</span>
+                                    <span id="summary-total">RM 25.00</span>
+                                </div>
+                            </div>
+
+                            <div class="mt-6 p-4 bg-white rounded-xl border border-gray-200 text-[11px] text-gray-500 space-y-2">
+                                <p><i class="fa-solid fa-circle-check text-green-600 mr-1"></i> Orders printed & dispatched within 24–48 hours.</p>
+                                <p><i class="fa-solid fa-shield-halved text-botaniq-700 mr-1"></i> Eco-friendly protective bubble packaging included.</p>
+                            </div>
+                        </div>
+
+                        <div class="mt-8 text-center">
+                            <span class="text-xs text-gray-400">BotaniQ Direct Sales Portal</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 4: SEO & MARKETING STRATEGY -->
+        <section id="page-marketing" class="page-section hidden py-12 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center max-w-3xl mx-auto mb-12">
+                    <span class="text-botaniq-700 text-xs font-bold uppercase tracking-widest">Academic Report Module 5.3 & 5.4</span>
+                    <h2 class="text-3xl font-serif font-bold text-gray-900 mt-1">SEO & Digital Advertising Strategy</h2>
+                    <p class="text-gray-600 mt-2">Comprehensive search keyword planning, organic SEO architecture, and paid search engine campaign structure.</p>
+                </div>
+
+                <!-- 5.3 Top 10 Keywords Table -->
+                <div class="mb-14">
+                    <h3 class="text-xl font-bold font-serif text-gray-900 mb-4 flex items-center">
+                        <i class="fa-solid fa-key mr-2 text-botaniq-700"></i> 5.3 Top 10 Targeted Keywords Ranking Strategy
+                    </h3>
+                    <div class="overflow-x-auto rounded-2xl border border-gray-200 shadow-sm">
+                        <table class="w-full text-left text-xs text-gray-700">
+                            <thead class="bg-botaniq-800 text-white uppercase text-[11px] tracking-wider">
+                                <tr>
+                                    <th class="p-4">#</th>
+                                    <th class="p-4">Target Keyword</th>
+                                    <th class="p-4">Search Intent</th>
+                                    <th class="p-4">Estimated Monthly Vol.</th>
+                                    <th class="p-4">Target Landing Page</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 bg-white">
+                                <tr class="hover:bg-botaniq-50">
+                                    <td class="p-4 font-bold text-botaniq-700">1</td>
+                                    <td class="p-4 font-semibold">3D printed pot Malaysia</td>
+                                    <td class="p-4"><span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-semibold">Transactional</span></td>
+                                    <td class="p-4">2,400</td>
+                                    <td class="p-4">Homepage / Catalog</td>
+                                </tr>
+                                <tr class="hover:bg-botaniq-50">
+                                    <td class="p-4 font-bold text-botaniq-700">2</td>
+                                    <td class="p-4 font-semibold">aesthetic plant pots RM20</td>
+                                    <td class="p-4"><span class="bg-green-100 text-green-800 px-2 py-0.5 rounded-full font-semibold">Commercial</span></td>
+                                    <td class="p-4">1,900</td>
+                                    <td class="p-4">Products Page</td>
+                                </tr>
+                                <tr class="hover:bg-botaniq-50">
+                                    <td class="p-4 font-bold text-botaniq-700">3</td>
+                                    <td class="p-4 font-semibold">minimalist flower pot online</td>
+                                    <td class="p-4"><span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-semibold">Transactional</span></td>
+                                    <td class="p-4">3,100</td>
+                                    <td class="p-4">Products Page</td>
+                                </tr>
+                                <tr class="hover:bg-botaniq-50">
+                                    <td class="p-4 font-bold text-botaniq-700">4</td>
+                                    <td class="p-4 font-semibold">BotaniQ flower pot Rembau</td>
+                                    <td class="p-4"><span class="bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full font-semibold">Navigational</span></td>
+                                    <td class="p-4">800</td>
+                                    <td class="p-4">Homepage / Contact</td>
+                                </tr>
+                                <tr class="hover:bg-botaniq-50">
+                                    <td class="p-4 font-bold text-botaniq-700">5</td>
+                                    <td class="p-4 font-semibold">eco friendly succulent pot PLA</td>
+                                    <td class="p-4"><span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-semibold">Informational</span></td>
+                                    <td class="p-4">1,200</td>
+                                    <td class="p-4">Product Detail Page</td>
+                                </tr>
+                                <tr class="hover:bg-botaniq-50">
+                                    <td class="p-4 font-bold text-botaniq-700">6</td>
+                                    <td class="p-4 font-semibold">cheap geometric plant pots malaysia</td>
+                                    <td class="p-4"><span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-semibold">Transactional</span></td>
+                                    <td class="p-4">1,500</td>
+                                    <td class="p-4">Products Page</td>
+                                </tr>
+                                <tr class="hover:bg-botaniq-50">
+                                    <td class="p-4 font-bold text-botaniq-700">7</td>
+                                    <td class="p-4 font-semibold">custom 3D print planter box</td>
+                                    <td class="p-4"><span class="bg-green-100 text-green-800 px-2 py-0.5 rounded-full font-semibold">Commercial</span></td>
+                                    <td class="p-4">950</td>
+                                    <td class="p-4">Customizer Previewer</td>
+                                </tr>
+                                <tr class="hover:bg-botaniq-50">
+                                    <td class="p-4 font-bold text-botaniq-700">8</td>
+                                    <td class="p-4 font-semibold">pasu bunga 3D murah</td>
+                                    <td class="p-4"><span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-semibold">Transactional</span></td>
+                                    <td class="p-4">4,200</td>
+                                    <td class="p-4">Order Page</td>
+                                </tr>
+                                <tr class="hover:bg-botaniq-50">
+                                    <td class="p-4 font-bold text-botaniq-700">9</td>
+                                    <td class="p-4 font-semibold">indoor desk pot modern design</td>
+                                    <td class="p-4"><span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-semibold">Informational</span></td>
+                                    <td class="p-4">1,800</td>
+                                    <td class="p-4">Homepage</td>
+                                </tr>
+                                <tr class="hover:bg-botaniq-50">
+                                    <td class="p-4 font-bold text-botaniq-700">10</td>
+                                    <td class="p-4 font-semibold">buy flower pot online delivery malaysia</td>
+                                    <td class="p-4"><span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-semibold">Transactional</span></td>
+                                    <td class="p-4">3,800</td>
+                                    <td class="p-4">Order Page</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 5.4 Function Explanation -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-botaniq-50 p-6 rounded-2xl border border-botaniq-100">
+                        <div class="w-10 h-10 bg-botaniq-700 text-white rounded-xl flex items-center justify-center mb-4">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </div>
+                        <h4 class="text-lg font-bold font-serif text-gray-900 mb-2">Function of Organic SEO</h4>
+                        <ul class="text-xs text-gray-600 space-y-2 list-disc list-inside">
+                            <li><strong>Sustainable Organic Traffic:</strong> Drives free, high-intent traffic to BotaniQ over the long term without continuous ad spend.</li>
+                            <li><strong>Domain Authority & Trust:</strong> Ranking natively on Google Search builds brand credibility for BotaniQ as a legitimate 3D manufacturing enterprise.</li>
+                            <li><strong>On-Page Keyword Optimization:</strong> Ensures content structured with title tags, meta descriptions, and image alt text matches queries like "3D printed pot Malaysia".</li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-blue-50 p-6 rounded-2xl border border-blue-100">
+                        <div class="w-10 h-10 bg-blue-600 text-white rounded-xl flex items-center justify-center mb-4">
+                            <i class="fa-solid fa-rectangle-ad"></i>
+                        </div>
+                        <h4 class="text-lg font-bold font-serif text-gray-900 mb-2">Function of Google Ads (PPC)</h4>
+                        <ul class="text-xs text-gray-600 space-y-2 list-disc list-inside">
+                            <li><strong>Immediate Visibility:</strong> Bypasses organic ranking timelines by placing BotaniQ directly at the top of Google Search results for transactional queries.</li>
+                            <li><strong>Hyper-Targeted Geofencing:</strong> Targets specific regions across Malaysia where plant lovers and online shoppers are concentrated.</li>
+                            <li><strong>Retargeting Campaigns:</strong> Tracks visitors who built a custom pot design but did not complete order submission, re-engaging them through Google Display ads.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 5: CONTACT US PAGE & CTA -->
+        <section id="page-contact" class="page-section hidden py-12">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center max-w-3xl mx-auto mb-10">
+                    <span class="text-botaniq-700 text-xs font-bold uppercase tracking-widest">Reach Out</span>
+                    <h2 class="text-3xl font-serif font-bold text-gray-900 mt-1">Contact BotaniQ</h2>
+                    <p class="text-gray-600 text-sm mt-1">We’re here to assist with custom bulk prints, order tracking, or general inquiries.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <!-- 5.6 Contact Info & CTA Cards -->
+                    <div class="lg:col-span-5 space-y-6">
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4">
+                            <h3 class="font-bold text-gray-900 text-base font-serif border-b pb-2">Business Information</h3>
+                            
+                            <div class="flex items-start space-x-3 text-xs">
+                                <div class="w-8 h-8 bg-botaniq-50 rounded-lg flex items-center justify-center text-botaniq-700 shrink-0">
+                                    <i class="fa-solid fa-location-dot"></i>
+                                </div>
+                                <div>
+                                    <span class="font-bold text-gray-800 block">HQ Workshop Address:</span>
+                                    <p class="text-gray-600 mt-0.5">Batu, Jalan Dpk 8, Kampung Kundur Hilir, 71400 Pedas, Negeri Sembilan, Malaysia</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center space-x-3 text-xs">
+                                <div class="w-8 h-8 bg-botaniq-50 rounded-lg flex items-center justify-center text-botaniq-700 shrink-0">
+                                    <i class="fa-solid fa-phone"></i>
+                                </div>
+                                <div>
+                                    <span class="font-bold text-gray-800 block">Customer Helpline:</span>
+                                    <p class="text-gray-600">+60 12-345 6789</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center space-x-3 text-xs">
+                                <div class="w-8 h-8 bg-botaniq-50 rounded-lg flex items-center justify-center text-botaniq-700 shrink-0">
+                                    <i class="fa-solid fa-envelope"></i>
+                                </div>
+                                <div>
+                                    <span class="font-bold text-gray-800 block">Email Address:</span>
+                                    <p class="text-gray-600">info@botaniq.com.my</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Embedded Interactive GPS Location Widget -->
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                            <h3 class="font-bold text-gray-900 text-sm font-serif mb-3 flex items-center justify-between">
+                                <span>GPS Workshop Location</span>
+                                <span class="text-[10px] bg-green-100 text-green-800 px-2 py-0.5 rounded-full font-bold">Live GPS</span>
+                            </h3>
+                            <div class="w-full h-44 bg-gray-200 rounded-xl overflow-hidden relative flex items-center justify-center border">
+                                <!-- Map Mock Graphics -->
+                                <div class="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:12px_12px] bg-gray-100"></div>
+                                <div class="relative text-center p-4">
+                                    <div class="w-10 h-10 bg-red-600 text-white rounded-full flex items-center justify-center mx-auto shadow-lg animate-bounce">
+                                        <i class="fa-solid fa-location-dot"></i>
+                                    </div>
+                                    <span class="font-bold text-xs text-gray-800 mt-2 block">BotaniQ Print Studio</span>
+                                    <span class="text-[10px] text-gray-500">Pedas, Negeri Sembilan</span>
+                                </div>
+                            </div>
+                            <a href="https://maps.google.com" target="_blank" class="mt-3 inline-block w-full text-center text-xs font-bold text-botaniq-700 hover:text-botaniq-800 border border-botaniq-200 py-2 rounded-xl hover:bg-botaniq-50 transition">
+                                Open in Google Maps <i class="fa-solid fa-arrow-up-right-from-square ml-1"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Online Contact Form -->
+                    <div class="lg:col-span-7 bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-gray-100">
+                        <h3 class="text-lg font-bold font-serif text-gray-900 mb-2">Send Us an Online Inquiry</h3>
+                        <p class="text-xs text-gray-500 mb-6">Have a custom bulk request or inquiry? Fill out the form below.</p>
+
+                        <form onsubmit="handleContactSubmit(event)" class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-1">Your Name:</label>
+                                <input type="text" required placeholder="Enter full name" class="w-full bg-gray-50 border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-botaniq-700 focus:outline-none">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-1">Email Address:</label>
+                                <input type="email" required placeholder="name@example.com" class="w-full bg-gray-50 border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-botaniq-700 focus:outline-none">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-1">Inquiry Message:</label>
+                                <textarea required rows="4" placeholder="How can BotaniQ help you today?" class="w-full bg-gray-50 border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-botaniq-700 focus:outline-none"></textarea>
+                            </div>
+
+                            <button type="submit" class="w-full bg-botaniq-700 hover:bg-botaniq-800 text-white font-bold py-3 rounded-xl shadow transition text-xs uppercase tracking-wider">
+                                Submit Message
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- FOOTER & SOCIAL MEDIA CROSS-LINKING HUB -->
+    <footer class="bg-botaniq-900 text-white border-t border-botaniq-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                <!-- Brand Info -->
+                <div class="space-y-3">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 bg-botaniq-700 rounded-xl flex items-center justify-center font-serif font-bold text-white border border-botaniq-accent">B</div>
+                        <span class="text-xl font-bold font-serif">BotaniQ</span>
+                    </div>
+                    <p class="text-xs text-botaniq-200">Print the Future, Grow the Green. Bringing affordable 3D printed planters to plant lovers across Malaysia.</p>
+                    <span class="inline-block text-[11px] bg-botaniq-800 text-botaniq-accent px-3 py-1 rounded-full font-bold border border-botaniq-700">Fixed Price: RM20.00</span>
+                </div>
+
+                <!-- Section Links -->
+                <div>
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-botaniq-accent mb-3">Site Navigation</h4>
+                    <ul class="space-y-2 text-xs text-gray-300">
+                        <li><a href="#" onclick="switchTab('home')" class="hover:text-white">Homepage</a></li>
+                        <li><a href="#" onclick="switchTab('products')" class="hover:text-white">Product Catalog</a></li>
+                        <li><a href="#" onclick="switchTab('order')" class="hover:text-white">Online Checkout</a></li>
+                        <li><a href="#" onclick="switchTab('marketing')" class="hover:text-white">SEO & Google Ads Report</a></li>
+                    </ul>
+                </div>
+
+                <!-- 5.8 Social Media Integration Links -->
+                <div>
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-botaniq-accent mb-3">5.8 Connect Social Media</h4>
+                    <div class="flex flex-col space-y-2 text-xs">
+                        <a href="https://facebook.com" target="_blank" class="flex items-center space-x-2 text-gray-300 hover:text-white">
+                            <i class="fa-brands fa-facebook text-blue-500 w-4"></i>
+                            <span>Facebook (@BotaniQ)</span>
+                        </a>
+                        <a href="https://instagram.com" target="_blank" class="flex items-center space-x-2 text-gray-300 hover:text-white">
+                            <i class="fa-brands fa-instagram text-pink-500 w-4"></i>
+                            <span>Instagram (@botaniqempire)</span>
+                        </a>
+                        <a href="https://tiktok.com" target="_blank" class="flex items-center space-x-2 text-gray-300 hover:text-white">
+                            <i class="fa-brands fa-tiktok text-white w-4"></i>
+                            <span>TikTok (@BotaniQ)</span>
+                        </a>
+                        <a href="https://wa.me/60123456789" target="_blank" class="flex items-center space-x-2 text-gray-300 hover:text-white">
+                            <i class="fa-brands fa-whatsapp text-green-500 w-4"></i>
+                            <span>WhatsApp Direct Sales</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 5.9 Return Cross-Linking Strategy -->
+                <div>
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-botaniq-accent mb-3">5.9 Social-to-Web Strategy</h4>
+                    <p class="text-[11px] text-gray-300 leading-relaxed">
+                        All official social profiles feature BotaniQ's centralized landing URL (<code class="text-botaniq-200">botaniq.com.my</code>) in bio links, converting social traffic into direct website orders.
+                    </p>
+                </div>
+            </div>
+
+            <div class="border-t border-botaniq-800 pt-6 text-center text-xs text-gray-400">
+                <p>&copy; 2026 BotaniQ Enterprise. Created for Digital Enterprise Business Project.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Feedback Message -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-botaniq-800 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center space-x-3 hidden z-50 border border-botaniq-500 transition-all transform translate-y-full">
+        <i class="fa-solid fa-circle-check text-green-400 text-lg"></i>
+        <span id="toast-message" class="text-xs font-semibold">Action completed successfully!</span>
+    </div>
+
+    <script>
+        // Tab Navigation Switcher
+        function switchTab(tabId) {
+            // Hide all pages
+            document.querySelectorAll('.page-section').forEach(section => {
+                section.classList.add('hidden');
+            });
+            // Remove active classes
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active-tab');
+            });
+
+            // Show selected page
+            const selectedPage = document.getElementById(`page-${tabId}`);
+            if (selectedPage) {
+                selectedPage.classList.remove('hidden');
+            }
+
+            // Highlight active tab
+            const activeNav = document.getElementById(`nav-${tabId}`);
+            if (activeNav) {
+                activeNav.classList.add('active-tab');
+            }
+
+            // Close mobile menu if open
+            document.getElementById('mobile-menu').classList.add('hidden');
+
+            // Scroll to top smooth
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        // Customizer Controls State
+        let currentCustomColor = '#2d5a27';
+        let currentCustomColorName = 'Olive Green';
+        let currentCustomPattern = 'pattern-ribbed';
+        let currentCustomPatternName = 'Vertical Ribbed';
+
+        function setCustomColor(hex, name) {
+            currentCustomColor = hex;
+            currentCustomColorName = name;
+            const preview = document.getElementById('custom-pot-preview');
+            preview.style.backgroundColor = hex;
+            updatePreviewTitle();
+        }
+
+        function setCustomPattern(patternClass, name) {
+            currentCustomPattern = patternClass;
+            currentCustomPatternName = name;
+            const preview = document.getElementById('custom-pot-preview');
+            
+            // Remove all pattern classes
+            preview.classList.remove('pattern-ribbed', 'pattern-hex', 'pattern-spiral', 'pattern-smooth');
+            preview.classList.add(patternClass);
+            updatePreviewTitle();
+        }
+
+        function updatePreviewTitle() {
+            document.getElementById('preview-title').innerText = `${currentCustomColorName} — ${currentCustomPatternName} Pot`;
+        }
+
+        function quickOrderCustomized() {
+            switchTab('order');
+            document.getElementById('order-model').value = 'Custom Designed Pot';
+            document.getElementById('order-color').value = currentCustomColorName;
+            calculateTotal();
+            showToast(`Loaded ${currentCustomColorName} Custom Pot to Order Form!`);
+        }
+
+        // Product Catalog Filters
+        function filterProducts(category) {
+            const cards = document.querySelectorAll('.product-card');
+            cards.forEach(card => {
+                if (category === 'all' || card.getAttribute('data-category') === category) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        }
+
+        // Order Page Logic & Price Calculator
+        function calculateTotal() {
+            const qtyInput = document.getElementById('order-qty');
+            let qty = parseInt(qtyInput.value) || 1;
+            if (qty < 1) qty = 1;
+            
+            const unitPrice = 20;
+            const shipping = 5;
+            const subtotal = qty * unitPrice;
+            const total = subtotal + shipping;
+
+            document.getElementById('summary-qty').innerText = qty;
+            document.getElementById('summary-subtotal').innerText = `RM ${subtotal.toFixed(2)}`;
+            document.getElementById('summary-total').innerText = `RM ${total.toFixed(2)}`;
+            document.getElementById('cart-count').innerText = qty;
+        }
+
+        function addToOrder(modelName) {
+            switchTab('order');
+            document.getElementById('order-model').value = modelName;
+            calculateTotal();
+            showToast(`Added "${modelName}" to Order Form!`);
+        }
+
+        // Order Form WhatsApp Handler
+        function handleOrderSubmit(e) {
+            e.preventDefault();
+            
+            const model = document.getElementById('order-model').value;
+            const color = document.getElementById('order-color').value;
+            const qty = document.getElementById('order-qty').value;
+            const name = document.getElementById('cust-name').value;
+            const phone = document.getElementById('cust-phone').value;
+            const address = document.getElementById('cust-address').value;
+            const total = (parseInt(qty) * 20 + 5).toFixed(2);
+
+            // Construct WhatsApp Message
+            const message = `*NEW BOTANIQ POT ORDER*%0A%0A` +
+                            `*Model:* ${model}%0A` +
+                            `*Color:* ${color}%0A` +
+                            `*Quantity:* ${qty} unit(s)%0A` +
+                            `*Total Price:* RM ${total}%0A%0A` +
+                            `*Customer Details:*%0A` +
+                            `*Name:* ${name}%0A` +
+                            `*Phone:* ${phone}%0A` +
+                            `*Delivery Address:* ${address}`;
+
+            const waUrl = `https://wa.me/60123456789?text=${message}`;
+            
+            showToast("Redirecting to WhatsApp Order Link...");
+            setTimeout(() => {
+                window.open(waUrl, '_blank');
+            }, 1000);
+        }
+
+        // Contact Form Handler
+        function handleContactSubmit(e) {
+            e.preventDefault();
+            showToast("Thank you! Your message has been sent to BotaniQ.");
+            e.target.reset();
+        }
+
+        // Toast Helper
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-message');
+            toastMsg.innerText = msg;
+            
+            toast.classList.remove('hidden', 'translate-y-full');
+            
+            setTimeout(() => {
+                toast.classList.add('translate-y-full');
+                setTimeout(() => toast.classList.add('hidden'), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
